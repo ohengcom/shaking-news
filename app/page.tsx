@@ -245,7 +245,7 @@ export default function ShakingHeadNews() {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto px-16 py-16">
+      <div className="max-w-5xl mx-auto px-16 py-16 mt-8">
         {isLoading ? (
           <div className="text-center py-8">
             <p className="text-green-700">正在加载新闻...</p>
