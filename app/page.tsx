@@ -4,6 +4,61 @@ import { useState, useEffect } from "react"
 import { parseRSSFeed } from "@/lib/rss-parser"
 import { Settings, X, Plus, Trash2 } from "lucide-react"
 
+const texts = {
+  zh: {
+    settings: "设置",
+    shakingSettings: "摇动设置",
+    frequency: "摇动频率 (秒)",
+    frequencyHint: "建议范围：5-300秒",
+    showStatus: "显示状态信息",
+    showStatusHint: "显示倾斜角度和倒计时信息",
+    fontSize: "字体大小",
+    fontSizeHint: "调整新闻文字大小",
+    small: "小",
+    medium: "中",
+    large: "大",
+    dataSourceSettings: "数据源设置",
+    addNewSource: "添加新数据源",
+    sourceName: "数据源名称",
+    sourceUrl: "JSON数据链接",
+    addSource: "添加数据源",
+    loading: "正在加载新闻...",
+    loadError: "无法加载新闻内容，请检查网络连接",
+    tiltAngle: "倾斜角度",
+    nextTilt: "下次倾斜",
+    seconds: "秒",
+    language: "语言",
+    languageHint: "选择界面语言",
+    dailyNews: "每日新闻",
+  },
+  en: {
+    settings: "Settings",
+    shakingSettings: "Shaking Settings",
+    frequency: "Frequency (seconds)",
+    frequencyHint: "Recommended range: 5-300 seconds",
+    showStatus: "Show Status Info",
+    showStatusHint: "Display tilt angle and countdown",
+    fontSize: "Font Size",
+    fontSizeHint: "Adjust news text size",
+    small: "Small",
+    medium: "Medium",
+    large: "Large",
+    dataSourceSettings: "Data Source Settings",
+    addNewSource: "Add New Data Source",
+    sourceName: "Source Name",
+    sourceUrl: "JSON Data URL",
+    addSource: "Add Source",
+    loading: "Loading news...",
+    loadError: "Unable to load news content, please check network connection",
+    tiltAngle: "Tilt Angle",
+    nextTilt: "Next Tilt",
+    seconds: "s",
+    language: "Language",
+    languageHint: "Select interface language",
+    dailyNews: "Daily News",
+  },
+}
+
 function SettingsModal({
   isOpen,
   onClose,
@@ -13,6 +68,8 @@ function SettingsModal({
   onShowStatusChange,
   fontSize,
   onFontSizeChange,
+  language,
+  onLanguageChange,
 }: {
   isOpen: boolean
   onClose: () => void
@@ -22,12 +79,33 @@ function SettingsModal({
   onShowStatusChange: (show: boolean) => void
   fontSize: string
   onFontSizeChange: (size: string) => void
+  language: "zh" | "en"
+  onLanguageChange: (lang: "zh" | "en") => void
 }) {
-  const [dataSources, setDataSources] = useState([
-    { id: 1, name: "每日新闻", url: "https://news.ravelloh.top/latest.json", active: true },
-  ])
+  const getDefaultDataSources = (lang: "zh" | "en") => {
+    if (lang === "en") {
+      return [
+        {
+          id: 1,
+          name: texts[lang].dailyNews,
+          url: "https://api.currentsapi.services/v1/latest-news?apiKey=iDKcx-tASvoDgtzsUAfw-OdgJvbPIhgnEPE6mcxp66zq7SHe",
+          active: true,
+        },
+      ]
+    } else {
+      return [{ id: 1, name: texts[lang].dailyNews, url: "https://news.ravelloh.top/latest.json", active: true }]
+    }
+  }
+
+  const [dataSources, setDataSources] = useState(getDefaultDataSources(language))
   const [newSourceName, setNewSourceName] = useState("")
   const [newSourceUrl, setNewSourceUrl] = useState("")
+
+  useEffect(() => {
+    setDataSources(getDefaultDataSources(language))
+  }, [language])
+
+  const t = texts[language]
 
   const addDataSource = () => {
     if (newSourceName && newSourceUrl) {
@@ -58,59 +136,74 @@ function SettingsModal({
       <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-green-800">设置</h2>
+          <h2 className="text-lg font-bold text-green-800">{t.settings}</h2>
           <button onClick={onClose} className="p-1 hover:bg-green-100 rounded-full transition-colors">
             <X size={20} className="text-green-600" />
           </button>
         </div>
 
+        <div className="mb-8">
+          <h3 className="text-base font-semibold mb-3 text-green-700">{t.language}</h3>
+          <div className="mb-4">
+            <select
+              value={language}
+              onChange={(e) => onLanguageChange(e.target.value as "zh" | "en")}
+              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
+            >
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+            </select>
+            <p className="text-xs text-green-500 mt-1">{t.languageHint}</p>
+          </div>
+        </div>
+
         {/* Frequency Settings */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-3 text-green-700">摇动设置</h3>
+          <h3 className="text-base font-semibold mb-3 text-green-700">{t.shakingSettings}</h3>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2 text-green-600">摇动频率 (秒)</label>
+            <label className="block text-xs font-medium mb-2 text-green-600">{t.frequency}</label>
             <input
               type="number"
               min="5"
               max="300"
               value={frequency}
               onChange={(e) => onFrequencyChange(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
             />
-            <p className="text-xs text-green-500 mt-1">建议范围：5-300秒</p>
+            <p className="text-xs text-green-500 mt-1">{t.frequencyHint}</p>
           </div>
 
           <div className="mb-4">
-            <label className="flex items-center gap-2 text-sm font-medium text-green-600">
+            <label className="flex items-center gap-2 text-xs font-medium text-green-600">
               <input
                 type="checkbox"
                 checked={showStatus}
                 onChange={(e) => onShowStatusChange(e.target.checked)}
-                className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                className="w-3 h-3 text-green-600 rounded focus:ring-green-500"
               />
-              显示状态信息
+              {t.showStatus}
             </label>
-            <p className="text-xs text-green-500 mt-1">显示倾斜角度和倒计时信息</p>
+            <p className="text-xs text-green-500 mt-1">{t.showStatusHint}</p>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2 text-green-600">字体大小</label>
+            <label className="block text-xs font-medium mb-2 text-green-600">{t.fontSize}</label>
             <select
               value={fontSize}
               onChange={(e) => onFontSizeChange(e.target.value)}
-              className="w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
             >
-              <option value="text-xs">小</option>
-              <option value="text-sm">中</option>
-              <option value="text-base">大</option>
+              <option value="text-xs">{t.small}</option>
+              <option value="text-sm">{t.medium}</option>
+              <option value="text-base">{t.large}</option>
             </select>
-            <p className="text-xs text-green-500 mt-1">调整新闻文字大小</p>
+            <p className="text-xs text-green-500 mt-1">{t.fontSizeHint}</p>
           </div>
         </div>
 
         {/* Data Source Settings */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-3 text-green-700">数据源设置</h3>
+          <h3 className="text-base font-semibold mb-3 text-green-700">{t.dataSourceSettings}</h3>
 
           {/* Current Data Sources */}
           <div className="space-y-3 mb-4">
@@ -120,10 +213,10 @@ function SettingsModal({
                   type="checkbox"
                   checked={source.active}
                   onChange={() => toggleDataSource(source.id)}
-                  className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                  className="w-3 h-3 text-green-600 rounded focus:ring-green-500"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-green-800 truncate">{source.name}</div>
+                  <div className="text-green-800 truncate text-xs">{source.name}</div>
                   <div className="text-xs text-green-600 truncate">{source.url}</div>
                 </div>
                 {dataSources.length > 1 && (
@@ -140,28 +233,28 @@ function SettingsModal({
 
           {/* Add New Data Source */}
           <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-green-700">添加新数据源</h4>
+            <h4 className="text-xs font-medium text-green-700">{t.addNewSource}</h4>
             <input
               type="text"
-              placeholder="数据源名称"
+              placeholder={t.sourceName}
               value={newSourceName}
               onChange={(e) => setNewSourceName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+              className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-xs"
             />
             <input
               type="url"
-              placeholder="JSON数据链接"
+              placeholder={t.sourceUrl}
               value={newSourceUrl}
               onChange={(e) => setNewSourceUrl(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+              className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-xs"
             />
             <button
               onClick={addDataSource}
               disabled={!newSourceName || !newSourceUrl}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm"
+              className="w-full flex items-center justify-center gap-2 px-4 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-xs"
             >
               <Plus size={16} />
-              添加数据源
+              {t.addSource}
             </button>
           </div>
         </div>
@@ -179,9 +272,27 @@ export default function ShakingHeadNews() {
   const [showSettings, setShowSettings] = useState(false)
   const [showStatus, setShowStatus] = useState(true)
   const [fontSize, setFontSize] = useState("text-sm")
+  const [language, setLanguage] = useState<"zh" | "en">("zh")
+
   const [activeSources, setActiveSources] = useState([
-    { id: 1, name: "每日新闻", url: "https://news.ravelloh.top/latest.json" },
+    { id: 1, name: texts.zh.dailyNews, url: "https://news.ravelloh.top/latest.json" },
   ])
+
+  useEffect(() => {
+    if (language === "en") {
+      setActiveSources([
+        {
+          id: 1,
+          name: texts.en.dailyNews,
+          url: "https://api.currentsapi.services/v1/latest-news?apiKey=iDKcx-tASvoDgtzsUAfw-OdgJvbPIhgnEPE6mcxp66zq7SHe",
+        },
+      ])
+    } else {
+      setActiveSources([{ id: 1, name: texts.zh.dailyNews, url: "https://news.ravelloh.top/latest.json" }])
+    }
+  }, [language])
+
+  const t = texts[language]
 
   const loadNews = async () => {
     setIsLoading(true)
@@ -191,8 +302,7 @@ export default function ShakingHeadNews() {
       setArticles(newsArticles)
     } catch (error) {
       console.error("Failed to load news:", error)
-      // Fallback to some basic content if RSS fails
-      setArticles(["无法加载新闻内容，请检查网络连接"])
+      setArticles([t.loadError])
     } finally {
       setIsLoading(false)
     }
@@ -241,21 +351,22 @@ export default function ShakingHeadNews() {
     <div className="min-h-screen bg-green-50 p-8 relative">
       {showStatus && (
         <div className="fixed top-4 left-4 text-sm text-green-600 z-30">
-          倾斜角度: {tiltAngle.toFixed(1)}° | 下次倾斜: {timeUntilNext}秒
+          {t.tiltAngle}: {tiltAngle.toFixed(1)}° | {t.nextTilt}: {timeUntilNext}
+          {t.seconds}
         </div>
       )}
 
       <div className="max-w-5xl mx-auto px-16 py-16 mt-8">
         {isLoading ? (
           <div className="text-center py-8">
-            <p className="text-green-700">正在加载新闻...</p>
+            <p className="text-green-700">{t.loading}</p>
           </div>
         ) : (
           <div
             className="space-y-3 bg-green-50 p-8 rounded-lg transition-transform duration-1000 ease-in-out"
             style={{ transform: `rotate(${tiltAngle}deg)` }}
           >
-            {articles.map((article, index) => (
+            {articles.slice(0, 15).map((article, index) => (
               <div key={index} className={`flex items-start gap-2 text-green-800 ${fontSize} leading-relaxed`}>
                 <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
                 <div>{article}</div>
@@ -268,7 +379,7 @@ export default function ShakingHeadNews() {
       <button
         onClick={() => setShowSettings(true)}
         className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-colors z-40"
-        aria-label="设置"
+        aria-label={t.settings}
       >
         <Settings size={20} />
       </button>
@@ -282,6 +393,8 @@ export default function ShakingHeadNews() {
         onShowStatusChange={setShowStatus}
         fontSize={fontSize}
         onFontSizeChange={setFontSize}
+        language={language}
+        onLanguageChange={setLanguage}
       />
     </div>
   )
