@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { parseRSSFeed } from "@/lib/rss-parser"
-import { Settings, X, Plus, Trash2 } from "lucide-react"
+import { Settings, X, Plus, Trash2, LogIn, LogOut } from "lucide-react"
+import { AuthButton } from "@/components/auth-button"
+import { authService, type UserSettings } from "@/lib/auth"
 
 const texts = {
   zh: {
@@ -10,6 +12,8 @@ const texts = {
     shakingSettings: "摇动设置",
     frequency: "摇动频率 (秒)",
     frequencyHint: "建议范围：5-300秒",
+    maxTiltAngle: "最大倾斜角度 (度)",
+    maxTiltAngleHint: "建议范围：5-45度",
     showStatus: "显示状态信息",
     showStatusHint: "显示倾斜角度和倒计时信息",
     fontSize: "字体大小",
@@ -30,12 +34,17 @@ const texts = {
     language: "语言",
     languageHint: "选择界面语言",
     dailyNews: "每日新闻",
+    adSettings: "广告设置",
+    showAds: "显示广告",
+    showAdsHint: "在页面两侧显示广告区域",
   },
   en: {
     settings: "Settings",
     shakingSettings: "Shaking Settings",
     frequency: "Frequency (seconds)",
     frequencyHint: "Recommended range: 5-300 seconds",
+    maxTiltAngle: "Max Tilt Angle (degrees)",
+    maxTiltAngleHint: "Recommended range: 5-45 degrees",
     showStatus: "Show Status Info",
     showStatusHint: "Display tilt angle and countdown",
     fontSize: "Font Size",
@@ -56,6 +65,9 @@ const texts = {
     language: "Language",
     languageHint: "Select interface language",
     dailyNews: "Daily News",
+    adSettings: "Ad Settings",
+    showAds: "Show Ads",
+    showAdsHint: "Display ad areas on both sides of the page",
   },
 }
 
@@ -64,23 +76,31 @@ function SettingsModal({
   onClose,
   frequency,
   onFrequencyChange,
+  maxTiltAngle,
+  onMaxTiltAngleChange,
   showStatus,
   onShowStatusChange,
   fontSize,
   onFontSizeChange,
   language,
   onLanguageChange,
+  showAds,
+  onShowAdsChange,
 }: {
   isOpen: boolean
   onClose: () => void
   frequency: number
   onFrequencyChange: (freq: number) => void
+  maxTiltAngle: number
+  onMaxTiltAngleChange: (angle: number) => void
   showStatus: boolean
   onShowStatusChange: (show: boolean) => void
   fontSize: string
   onFontSizeChange: (size: string) => void
   language: "zh" | "en"
   onLanguageChange: (lang: "zh" | "en") => void
+  showAds: boolean
+  onShowAdsChange: (show: boolean) => void
 }) {
   const getDefaultDataSources = (lang: "zh" | "en") => {
     if (lang === "en") {
@@ -142,6 +162,15 @@ function SettingsModal({
           </button>
         </div>
 
+        {/* Authentication Section */}
+        <div className="mb-8">
+          <h3 className="text-base font-semibold mb-3 text-green-700">{language === "zh" ? "账户" : "Account"}</h3>
+          <AuthButton language={language} />
+          <p className="text-xs text-green-500 mt-2">
+            {language === "zh" ? "登录后可同步设置到云端" : "Sign in to sync settings to cloud"}
+          </p>
+        </div>
+
         <div className="mb-8">
           <h3 className="text-base font-semibold mb-3 text-green-700">{t.language}</h3>
           <div className="mb-4">
@@ -174,6 +203,19 @@ function SettingsModal({
           </div>
 
           <div className="mb-4">
+            <label className="block text-xs font-medium mb-2 text-green-600">{t.maxTiltAngle}</label>
+            <input
+              type="number"
+              min="5"
+              max="45"
+              value={maxTiltAngle}
+              onChange={(e) => onMaxTiltAngleChange(Number(e.target.value))}
+              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
+            />
+            <p className="text-xs text-green-500 mt-1">{t.maxTiltAngleHint}</p>
+          </div>
+
+          <div className="mb-4">
             <label className="flex items-center gap-2 text-xs font-medium text-green-600">
               <input
                 type="checkbox"
@@ -198,6 +240,23 @@ function SettingsModal({
               <option value="text-base">{t.large}</option>
             </select>
             <p className="text-xs text-green-500 mt-1">{t.fontSizeHint}</p>
+          </div>
+        </div>
+
+        {/* Ad Settings */}
+        <div className="mb-8">
+          <h3 className="text-base font-semibold mb-3 text-green-700">{t.adSettings}</h3>
+          <div className="mb-4">
+            <label className="flex items-center gap-2 text-xs font-medium text-green-600">
+              <input
+                type="checkbox"
+                checked={showAds}
+                onChange={(e) => onShowAdsChange(e.target.checked)}
+                className="w-3 h-3 text-green-600 rounded focus:ring-green-500"
+              />
+              {t.showAds}
+            </label>
+            <p className="text-xs text-green-500 mt-1">{t.showAdsHint}</p>
           </div>
         </div>
 
@@ -268,15 +327,46 @@ export default function ShakingHeadNews() {
   const [isLoading, setIsLoading] = useState(true)
   const [tiltAngle, setTiltAngle] = useState(-16)
   const [frequency, setFrequency] = useState(30)
+  const [maxTiltAngle, setMaxTiltAngle] = useState(20)
   const [timeUntilNext, setTimeUntilNext] = useState(30)
   const [showSettings, setShowSettings] = useState(false)
   const [showStatus, setShowStatus] = useState(true)
   const [fontSize, setFontSize] = useState("text-sm")
   const [language, setLanguage] = useState<"zh" | "en">("zh")
-
+  const [showAds, setShowAds] = useState(false)
+  const [user, setUser] = useState(null)
   const [activeSources, setActiveSources] = useState([
     { id: 1, name: texts.zh.dailyNews, url: "https://news.ravelloh.top/latest.json" },
   ])
+
+  useEffect(() => {
+    authService.initializeGoogleAuth()
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = authService.onAuthStateChanged((user) => {
+      setUser(user)
+
+      if (user) {
+        // Load user settings when signed in
+        const userSettings = authService.getUserSettings()
+        if (userSettings) {
+          setFrequency(userSettings.frequency)
+          setMaxTiltAngle(userSettings.maxTiltAngle)
+          setShowStatus(userSettings.showStatus)
+          setFontSize(userSettings.fontSize)
+          setLanguage(userSettings.language)
+          setShowAds(userSettings.showAds)
+          // Update data sources if available
+          if (userSettings.dataSources) {
+            setActiveSources(userSettings.dataSources.filter((source) => source.active))
+          }
+        }
+      }
+    })
+
+    return unsubscribe
+  }, [])
 
   useEffect(() => {
     if (language === "en") {
@@ -291,6 +381,21 @@ export default function ShakingHeadNews() {
       setActiveSources([{ id: 1, name: texts.zh.dailyNews, url: "https://news.ravelloh.top/latest.json" }])
     }
   }, [language])
+
+  useEffect(() => {
+    if (user) {
+      const userSettings: UserSettings = {
+        frequency,
+        maxTiltAngle,
+        showStatus,
+        fontSize,
+        language,
+        showAds,
+        dataSources: activeSources.map((source) => ({ ...source, active: true })),
+      }
+      authService.saveUserSettings(userSettings)
+    }
+  }, [user, frequency, maxTiltAngle, showStatus, fontSize, language, showAds, activeSources])
 
   const t = texts[language]
 
@@ -313,18 +418,16 @@ export default function ShakingHeadNews() {
       const isNegative = Math.random() < 0.5
       let randomAngle
       if (isNegative) {
-        // Generate angle between -20° and -5°
-        randomAngle = -20 + Math.random() * 15
+        randomAngle = -maxTiltAngle + Math.random() * (maxTiltAngle - 5)
       } else {
-        // Generate angle between 5° and 20°
-        randomAngle = 5 + Math.random() * 15
+        randomAngle = 5 + Math.random() * (maxTiltAngle - 5)
       }
       setTiltAngle(randomAngle)
       setTimeUntilNext(frequency)
     }, frequency * 1000)
 
     return () => clearInterval(tiltTimer)
-  }, [frequency])
+  }, [frequency, maxTiltAngle])
 
   useEffect(() => {
     const countdownTimer = setInterval(() => {
@@ -343,6 +446,10 @@ export default function ShakingHeadNews() {
     setTimeUntilNext(newFrequency)
   }
 
+  const handleMaxTiltAngleChange = (newMaxTiltAngle: number) => {
+    setMaxTiltAngle(newMaxTiltAngle)
+  }
+
   const handleDataSourceChange = (newSources: any[]) => {
     setActiveSources(newSources.filter((source) => source.active))
   }
@@ -353,6 +460,26 @@ export default function ShakingHeadNews() {
         <div className="fixed top-4 left-4 text-sm text-green-600 z-30">
           {t.tiltAngle}: {tiltAngle.toFixed(1)}° | {t.nextTilt}: {timeUntilNext}
           {t.seconds}
+        </div>
+      )}
+
+      {showAds && (
+        <div className="fixed left-4 top-1/2 transform -translate-y-1/2 w-32 h-96 bg-white bg-opacity-90 border border-green-200 rounded-lg shadow-lg z-20 flex items-center justify-center">
+          <div className="text-center text-green-600 text-xs">
+            <div className="mb-2">AdSense</div>
+            <div className="text-gray-400">广告位</div>
+            <div className="text-gray-400 text-xs mt-1">160x600</div>
+          </div>
+        </div>
+      )}
+
+      {showAds && (
+        <div className="fixed right-4 top-1/2 transform -translate-y-1/2 w-32 h-96 bg-white bg-opacity-90 border border-green-200 rounded-lg shadow-lg z-20 flex items-center justify-center">
+          <div className="text-center text-green-600 text-xs">
+            <div className="mb-2">AdSense</div>
+            <div className="text-gray-400">广告位</div>
+            <div className="text-gray-400 text-xs mt-1">160x600</div>
+          </div>
         </div>
       )}
 
@@ -376,25 +503,51 @@ export default function ShakingHeadNews() {
         )}
       </div>
 
-      <button
-        onClick={() => setShowSettings(true)}
-        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-colors z-40"
-        aria-label={t.settings}
-      >
-        <Settings size={20} />
-      </button>
+      {/* Login/Logout and Settings Icons */}
+      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
+        {!user ? (
+          <button
+            onClick={() => authService.signIn()}
+            className="bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-colors"
+            aria-label={language === "zh" ? "登录" : "Sign In"}
+          >
+            <LogIn size={20} />
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-colors"
+              aria-label={t.settings}
+            >
+              <Settings size={20} />
+            </button>
+            <button
+              onClick={() => authService.signOut()}
+              className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-colors"
+              aria-label={language === "zh" ? "登出" : "Sign Out"}
+            >
+              <LogOut size={20} />
+            </button>
+          </>
+        )}
+      </div>
 
       <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         frequency={frequency}
         onFrequencyChange={handleFrequencyChange}
+        maxTiltAngle={maxTiltAngle}
+        onMaxTiltAngleChange={handleMaxTiltAngleChange}
         showStatus={showStatus}
         onShowStatusChange={setShowStatus}
         fontSize={fontSize}
         onFontSizeChange={setFontSize}
         language={language}
         onLanguageChange={setLanguage}
+        showAds={showAds}
+        onShowAdsChange={setShowAds}
       />
     </div>
   )

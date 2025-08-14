@@ -30,6 +30,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${montserrat.variable} ${openSans.variable} antialiased`}>
+      <head>
+        <meta
+          httpEquiv="Permissions-Policy"
+          content="identity-credentials-get=*, publickey-credentials-get=*, publickey-credentials-create=*"
+        />
+        <meta name="google-signin-client_id" content={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""} />
+      </head>
       <body>{children}</body>
     </html>
   )
