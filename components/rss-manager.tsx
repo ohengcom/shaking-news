@@ -139,7 +139,7 @@ export default function RSSManager({ feeds, onFeedsChange, onActiveFeedChange, a
                   <Label htmlFor="feed-url">RSS URL</Label>
                   <Input
                     id="feed-url"
-                    placeholder="https://example.com/rss.xml"
+                    placeholder="https://www.888388.xyz/rss.xml"
                     value={newFeedUrl}
                     onChange={(e) => setNewFeedUrl(e.target.value)}
                   />

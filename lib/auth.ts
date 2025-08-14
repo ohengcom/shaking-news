@@ -23,45 +23,86 @@ interface UserSettings {
 class AuthService {
   private user: User | null = null
   private listeners: Array<(user: User | null) => void> = []
+  private tokenClient: any = null
 
-  // Initialize Google Sign-In with popup flow
+  // Initialize Google Sign-In with popup flow for www.888388.xyz
   async initializeGoogleAuth(): Promise<void> {
-    // Mock initialization - no actual Google API needed
-    return Promise.resolve()
+    return new Promise((resolve, reject) => {
+      // Load Google Identity Services script
+      if (!document.querySelector('script[src*="accounts.google.com"]')) {
+        const script = document.createElement("script")
+        script.src = "https://accounts.google.com/gsi/client"
+        script.async = true
+        script.defer = true
+        script.onload = () => this.setupGoogleAuth().then(resolve).catch(reject)
+        script.onerror = reject
+        document.head.appendChild(script)
+      } else {
+        this.setupGoogleAuth().then(resolve).catch(reject)
+      }
+    })
+  }
+
+  private async setupGoogleAuth(): Promise<void> {
+    if (typeof window !== "undefined" && window.google) {
+      // Configure for www.888388.xyz domain
+      this.tokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "your-google-client-id",
+        scope: "openid email profile",
+        callback: (response: any) => {
+          if (response.access_token) {
+            this.handleAuthSuccess(response.access_token)
+          }
+        },
+        error_callback: (error: any) => {
+          console.error("Google Auth Error:", error)
+        },
+      })
+    }
   }
 
   async signIn(): Promise<void> {
-    // Simulate loading delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    if (this.tokenClient) {
+      // Request access token via popup
+      this.tokenClient.requestAccessToken({
+        prompt: "consent",
+      })
+    } else {
+      throw new Error("Google Auth not initialized")
+    }
+  }
 
-    // Create mock user data
-    const mockUsers = [
-      {
-        id: "mock_user_1",
-        name: "Demo User",
-        email: "demo@example.com",
-        picture: "/diverse-user-avatars.png",
-      },
-      {
-        id: "mock_user_2",
-        name: "测试用户",
-        email: "test@example.com",
-        picture: "/diverse-user-avatars.png",
-      },
-    ]
+  private async handleAuthSuccess(accessToken: string): Promise<void> {
+    try {
+      // Get user info from Google API
+      const response = await fetch(`https://www.googleapis.com/oauth2/v2/userinfo?access_token=${accessToken}`)
+      const userInfo = await response.json()
 
-    // Randomly select a mock user
-    const user = mockUsers[Math.floor(Math.random() * mockUsers.length)]
+      const user: User = {
+        id: userInfo.id,
+        name: userInfo.name,
+        email: userInfo.email,
+        picture: userInfo.picture,
+      }
 
-    this.user = user
-    localStorage.setItem("user", JSON.stringify(user))
-    this.notifyListeners()
+      this.user = user
+      localStorage.setItem("user", JSON.stringify(user))
+      this.notifyListeners()
+    } catch (error) {
+      console.error("Failed to get user info:", error)
+    }
   }
 
   signOut(): void {
     this.user = null
     localStorage.removeItem("user")
     localStorage.removeItem("userSettings")
+
+    // Revoke Google token if available
+    if (window.google && window.google.accounts) {
+      window.google.accounts.id.disableAutoSelect()
+    }
+
     this.notifyListeners()
   }
 

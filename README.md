@@ -2,7 +2,7 @@
 
 *Turn "shaking your head in dismay" at the news into healthy neck exercise!*
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/ohengcoms-projects/v0-shaking-and-news)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://www.888388.xyz)
 [![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/fnrXcVTl8GW)
 
 ## 🎯 Project Concept
@@ -44,10 +44,10 @@ Instead of just shaking your head in dismay while reading the news, why not actu
 - **React Hooks**: State management and lifecycle handling
 
 ### Data Sources
-- **Chinese News**: `https://news.ravelloh.top/latest.json`
+- **Chinese News**: `https://www.888388.xyz/latest.json`
   - JSON format with `date` and `content` array structure
-- **English News**: `https://api.currentsapi.services/v1/latest-news`
-  - CurrentsAPI with API key authentication
+- **English News**: `https://www.888388.xyz/api/v1/latest-news`
+  - Custom API with authentication
 - **Fallback Content**: Comprehensive sample news when APIs are unavailable
 
 ### Animation System
@@ -100,8 +100,8 @@ npm run dev
 ### Environment Variables
 For English news functionality, you may need to configure API keys:
 \`\`\`env
-# Optional: CurrentsAPI key for English news
-CURRENTS_API_KEY=your_api_key_here
+# Optional: API key for English news
+ENGLISH_NEWS_API_KEY=your_api_key_here
 \`\`\`
 
 ## 🎮 Usage Instructions
@@ -127,14 +127,14 @@ CURRENTS_API_KEY=your_api_key_here
 ## 🌐 API Integration
 
 ### Chinese News Source
-- **Endpoint**: `https://news.ravelloh.top/latest.json`
-- **Format**: JSON with date and content array
+- **Endpoint**: `https://www.888388.xyz/latest.json`
+- **Format**: JSON with date and `content` array
 - **Update Frequency**: Regular updates with latest Chinese news
 
 ### English News Source  
-- **Endpoint**: `https://api.currentsapi.services/v1/latest-news`
-- **Provider**: CurrentsAPI
-- **Authentication**: API key required
+- **Endpoint**: `https://www.888388.xyz/api/v1/latest-news`
+- **Provider**: Custom API
+- **Authentication**: API key may be required
 - **Coverage**: International news in English
 
 ## 🚀 Deployment
@@ -173,6 +173,6 @@ This project is open source and available under the MIT License.
 
 ---
 
-**Live Demo**: [https://vercel.com/ohengcoms-projects/v0-shaking-and-news](https://vercel.com/ohengcoms-projects/v0-shaking-and-news)
+**Live Demo**: [https://www.888388.xyz](https://www.888388.xyz)
 
 *Transform your news reading into a wellness activity! 📰💪*
