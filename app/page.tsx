@@ -330,7 +330,7 @@ export default function ShakingHeadNews() {
   const [maxTiltAngle, setMaxTiltAngle] = useState(20)
   const [timeUntilNext, setTimeUntilNext] = useState(30)
   const [showSettings, setShowSettings] = useState(false)
-  const [showStatus, setShowStatus] = useState(true)
+  const [showStatus, setShowStatus] = useState(false)
   const [fontSize, setFontSize] = useState("text-sm")
   const [language, setLanguage] = useState<"zh" | "en">("zh")
   const [showAds, setShowAds] = useState(false)
@@ -483,7 +483,7 @@ export default function ShakingHeadNews() {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto px-16 py-16 mt-8">
+      <div className="max-w-5xl mx-auto px-16 py-16 mt-4">
         {isLoading ? (
           <div className="text-center py-8">
             <p className="text-green-700">{t.loading}</p>
