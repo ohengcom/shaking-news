@@ -40,7 +40,6 @@ const texts = {
     showAdsHint: "在页面两侧显示广告区域",
     languageSettings: "语言设置",
     fontSettings: "字体设置",
-    displayOptions: "显示选项",
   },
   en: {
     settings: "Settings",
@@ -74,7 +73,6 @@ const texts = {
     showAdsHint: "Display ad areas on both sides of the page",
     languageSettings: "Language Settings",
     fontSettings: "Font Settings",
-    displayOptions: "Display Options",
   },
 }
 
@@ -244,7 +242,6 @@ function SettingsModal({
 
         {/* Display Options Section */}
         <div className="mb-5">
-          <h3 className="text-base font-semibold mb-2 text-green-700">{t.displayOptions}</h3>
           <div className="flex gap-6 mb-3">
             <div className="flex-1">
               <label className="flex items-center gap-2 text-xs font-medium text-green-600">
