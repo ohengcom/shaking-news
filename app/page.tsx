@@ -175,43 +175,61 @@ function SettingsModal({
         {/* Frequency Settings */}
         <div className="mb-5">
           <h3 className="text-base font-semibold mb-2 text-green-700">{t.shakingSettings}</h3>
-          <div className="mb-3">
-            <label className="block text-xs font-medium mb-1 text-green-600">{t.frequency}</label>
-            <input
-              type="number"
-              min="5"
-              max="300"
-              value={frequency}
-              onChange={(e) => onFrequencyChange(Number(e.target.value))}
-              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
-            />
-            <p className="text-xs text-green-500 mt-1">{t.frequencyHint}</p>
-          </div>
 
-          <div className="mb-3">
-            <label className="block text-xs font-medium mb-1 text-green-600">{t.maxTiltAngle}</label>
-            <input
-              type="number"
-              min="5"
-              max="45"
-              value={maxTiltAngle}
-              onChange={(e) => onMaxTiltAngleChange(Number(e.target.value))}
-              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
-            />
-            <p className="text-xs text-green-500 mt-1">{t.maxTiltAngleHint}</p>
-          </div>
-
-          <div className="mb-3">
-            <label className="flex items-center gap-2 text-xs font-medium text-green-600">
+          <div className="flex gap-3 mb-3">
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1 text-green-600">{t.frequency}</label>
               <input
-                type="checkbox"
-                checked={showStatus}
-                onChange={(e) => onShowStatusChange(e.target.checked)}
-                className="w-3 h-3 text-green-600 rounded focus:ring-green-500"
+                type="number"
+                min="5"
+                max="300"
+                value={frequency}
+                onChange={(e) => onFrequencyChange(Number(e.target.value))}
+                className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
               />
-              {t.showStatus}
-            </label>
-            <p className="text-xs text-green-500 mt-1">{t.showStatusHint}</p>
+              <p className="text-xs text-green-500 mt-1">{t.frequencyHint}</p>
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1 text-green-600">{t.maxTiltAngle}</label>
+              <input
+                type="number"
+                min="5"
+                max="45"
+                value={maxTiltAngle}
+                onChange={(e) => onMaxTiltAngleChange(Number(e.target.value))}
+                className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
+              />
+              <p className="text-xs text-green-500 mt-1">{t.maxTiltAngleHint}</p>
+            </div>
+          </div>
+
+          <div className="flex gap-6 mb-3">
+            <div className="flex-1">
+              <label className="flex items-center gap-2 text-xs font-medium text-green-600">
+                <input
+                  type="checkbox"
+                  checked={showStatus}
+                  onChange={(e) => onShowStatusChange(e.target.checked)}
+                  className="w-3 h-3 text-green-600 rounded focus:ring-green-500"
+                />
+                {t.showStatus}
+              </label>
+              <p className="text-xs text-green-500 mt-1">{t.showStatusHint}</p>
+            </div>
+
+            <div className="flex-1">
+              <label className="flex items-center gap-2 text-xs font-medium text-green-600">
+                <input
+                  type="checkbox"
+                  checked={showAds}
+                  onChange={(e) => onShowAdsChange(e.target.checked)}
+                  className="w-3 h-3 text-green-600 rounded focus:ring-green-500"
+                />
+                {t.showAds}
+              </label>
+              <p className="text-xs text-green-500 mt-1">{t.showAdsHint}</p>
+            </div>
           </div>
 
           <div className="mb-3">
@@ -227,22 +245,18 @@ function SettingsModal({
             </select>
             <p className="text-xs text-green-500 mt-1">{t.fontSizeHint}</p>
           </div>
-        </div>
 
-        {/* Ad Settings */}
-        <div className="mb-5">
-          <h3 className="text-base font-semibold mb-2 text-green-700">{t.adSettings}</h3>
           <div className="mb-3">
-            <label className="flex items-center gap-2 text-xs font-medium text-green-600">
-              <input
-                type="checkbox"
-                checked={showAds}
-                onChange={(e) => onShowAdsChange(e.target.checked)}
-                className="w-3 h-3 text-green-600 rounded focus:ring-green-500"
-              />
-              {t.showAds}
-            </label>
-            <p className="text-xs text-green-500 mt-1">{t.showAdsHint}</p>
+            <label className="block text-xs font-medium mb-1 text-green-600">{t.language}</label>
+            <select
+              value={language}
+              onChange={(e) => onLanguageChange(e.target.value as "zh" | "en")}
+              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
+            >
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+            </select>
+            <p className="text-xs text-green-500 mt-1">{t.languageHint}</p>
           </div>
         </div>
 
