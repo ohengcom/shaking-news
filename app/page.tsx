@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { parseRSSFeed } from "@/lib/rss-parser"
+import { newsPreloader, getCachedNews } from "@/lib/news-preloader"
 import { Settings, X, Plus, Trash2, LogIn, LogOut } from "lucide-react"
 import { AuthButton } from "@/components/auth-button"
 import { authService, type UserSettings } from "@/lib/auth"
@@ -108,7 +109,7 @@ function SettingsModal({
         {
           id: 1,
           name: texts[lang].dailyNews,
-          url: "https://api.currentsapi.services/v1/latest-news?apiKey=iDKcx-tASvoDgtzsUAfw-OdgJvbPIhgnEPE6mcxp66zq7SHe",
+          url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/rss.xml",
           active: true,
         },
       ]
@@ -336,7 +337,7 @@ export default function ShakingHeadNews() {
   const [showAds, setShowAds] = useState(false)
   const [user, setUser] = useState(null)
   const [activeSources, setActiveSources] = useState([
-    { id: 1, name: texts.zh.dailyNews, url: "https://news.ravelloh.top/latest.json" },
+    { id: 1, name: texts.zh.dailyNews, url: "https://news.ravelloh.top/latest.json", active: true },
   ])
 
   useEffect(() => {
@@ -374,11 +375,14 @@ export default function ShakingHeadNews() {
         {
           id: 1,
           name: texts.en.dailyNews,
-          url: "https://api.currentsapi.services/v1/latest-news?apiKey=iDKcx-tASvoDgtzsUAfw-OdgJvbPIhgnEPE6mcxp66zq7SHe",
+          url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/rss.xml",
+          active: true,
         },
       ])
     } else {
-      setActiveSources([{ id: 1, name: texts.zh.dailyNews, url: "https://news.ravelloh.top/latest.json" }])
+      setActiveSources([
+        { id: 1, name: texts.zh.dailyNews, url: "https://news.ravelloh.top/latest.json", active: true },
+      ])
     }
   }, [language])
 
@@ -402,9 +406,24 @@ export default function ShakingHeadNews() {
   const loadNews = async () => {
     setIsLoading(true)
     try {
-      const rssResults = await Promise.all(activeSources.map((source) => parseRSSFeed(source.url, source.name)))
-      const newsArticles = rssResults.flatMap((result) => result.articles.map((article) => article.title))
-      setArticles(newsArticles)
+      console.log("[v0] Loading news with caching enabled")
+
+      // Use cached news function for faster loading
+      const newsArticles = await getCachedNews(activeSources)
+
+      if (newsArticles.length > 0) {
+        setArticles(newsArticles)
+        console.log(`[v0] Loaded ${newsArticles.length} cached news articles`)
+      } else {
+        // Fallback to direct fetch if no cache
+        const rssResults = await Promise.all(activeSources.map((source) => parseRSSFeed(source.url, source.name, true)))
+        const fallbackArticles = rssResults.flatMap((result) => result.articles.map((article) => article.title))
+        setArticles(fallbackArticles)
+        console.log(`[v0] Loaded ${fallbackArticles.length} articles via direct fetch`)
+      }
+
+      // Trigger background preload for next time
+      newsPreloader.forcePreload(activeSources)
     } catch (error) {
       console.error("Failed to load news:", error)
       setArticles([t.loadError])

@@ -1,3 +1,5 @@
+import { cacheManager, getCacheKey } from "./cache-manager"
+
 export interface ParsedArticle {
   id: string
   title: string
@@ -14,19 +16,34 @@ export interface RSSParseResult {
   feedDescription?: string
 }
 
-// JSON news parser using browser built-in APIs
-export async function parseRSSFeed(url: string, feedName: string): Promise<RSSParseResult> {
-  console.log(`Fetching JSON news: ${feedName} from ${url}`)
+export async function parseRSSFeed(url: string, feedName: string, useCache = true): Promise<RSSParseResult> {
+  const cacheKey = getCacheKey.rssFeed(url)
+
+  if (useCache) {
+    const cached = cacheManager.get<RSSParseResult>(cacheKey)
+    if (cached) {
+      console.log(`[v0] Using cached news data for ${feedName}`)
+      return cached
+    }
+  }
+
+  console.log(`[v0] Fetching JSON news: ${feedName} from ${url}`)
 
   try {
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 15000) // Increased timeout to 15 seconds
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
+
+    if (url.includes("newsapi.org")) {
+      console.log(`[v0] Attempting NewsAPI.org request - this may fail due to CORS restrictions`)
+    } else if (url.includes("rss2json.com")) {
+      console.log(`[v0] Fetching via RSS2JSON service - CORS friendly`)
+    }
 
     const response = await fetch(url, {
       method: "GET",
       headers: {
         Accept: "application/json, text/plain, */*",
-        "User-Agent": "ShakingHeadNews/1.0", // Added User-Agent header
+        "User-Agent": "ShakingHeadNews/1.0",
       },
       mode: "cors",
       signal: controller.signal,
@@ -35,11 +52,14 @@ export async function parseRSSFeed(url: string, feedName: string): Promise<RSSPa
     clearTimeout(timeoutId)
 
     if (!response.ok) {
+      console.log(`[v0] HTTP Error: ${response.status} ${response.statusText} for ${url}`)
       if (response.status === 404) {
         console.warn(`News API endpoint not found: ${url}`)
         throw new Error(`API endpoint not configured on domain (404)`)
       } else if (response.status === 403) {
         throw new Error(`Access forbidden - check API permissions (403)`)
+      } else if (response.status === 426) {
+        throw new Error(`NewsAPI.org blocks browser requests - requires server-side implementation (426)`)
       } else if (response.status >= 500) {
         throw new Error(`Server error - API temporarily unavailable (${response.status})`)
       } else {
@@ -48,8 +68,46 @@ export async function parseRSSFeed(url: string, feedName: string): Promise<RSSPa
     }
 
     const jsonData = await response.json()
+    console.log(`[v0] Successfully fetched data from ${feedName}:`, jsonData)
 
-    if (jsonData.news && Array.isArray(jsonData.news)) {
+    let result: RSSParseResult
+
+    if (jsonData.status === "ok" && jsonData.articles && Array.isArray(jsonData.articles)) {
+      const articles: ParsedArticle[] = jsonData.articles.map((item: any, index: number) => ({
+        id: `newsapi-${Date.now()}-${index}`,
+        title: String(item.title || `News ${index + 1}`).trim(),
+        summary: String(item.description || "").trim(),
+        link: String(item.url || "#").trim(),
+        pubDate: new Date(item.publishedAt || Date.now()),
+        category: item.source?.name || undefined,
+        source: feedName,
+      }))
+
+      result = {
+        articles,
+        feedTitle: feedName,
+        feedDescription: `Latest news from ${feedName} via NewsAPI`,
+      }
+    } else if (jsonData.status === "ok" && jsonData.items && Array.isArray(jsonData.items)) {
+      // RSS2JSON format (used for BBC News and other RSS feeds)
+      const articles: ParsedArticle[] = jsonData.items.map((item: any, index: number) => ({
+        id: `rss2json-${Date.now()}-${index}`,
+        title: String(item.title || `News ${index + 1}`).trim(),
+        summary: String(item.description || item.content || "")
+          .trim()
+          .replace(/<[^>]*>/g, ""), // Strip HTML tags
+        link: String(item.link || "#").trim(),
+        pubDate: new Date(item.pubDate || Date.now()),
+        category: item.categories?.[0] || undefined,
+        source: feedName,
+      }))
+
+      result = {
+        articles,
+        feedTitle: jsonData.feed?.title || feedName,
+        feedDescription: jsonData.feed?.description || `Latest news from ${feedName} via RSS`,
+      }
+    } else if (jsonData.news && Array.isArray(jsonData.news)) {
       const articles: ParsedArticle[] = jsonData.news.map((item: any, index: number) => ({
         id: `currents-${Date.now()}-${index}`,
         title: String(item.title || item.headline || `News ${index + 1}`).trim(),
@@ -60,15 +118,12 @@ export async function parseRSSFeed(url: string, feedName: string): Promise<RSSPa
         source: feedName,
       }))
 
-      return {
+      result = {
         articles,
         feedTitle: feedName,
         feedDescription: `Latest news from ${feedName}`,
       }
-    }
-
-    // Handle Chinese JSON format
-    if (jsonData.date && jsonData.content && Array.isArray(jsonData.content)) {
+    } else if (jsonData.date && jsonData.content && Array.isArray(jsonData.content)) {
       let pubDate = new Date()
       if (jsonData.date) {
         pubDate = new Date(jsonData.date)
@@ -87,58 +142,72 @@ export async function parseRSSFeed(url: string, feedName: string): Promise<RSSPa
         source: feedName,
       }))
 
-      return {
+      result = {
         articles,
         feedTitle: feedName,
         feedDescription: `Latest news from ${feedName} - ${jsonData.date}`,
       }
-    }
-
-    // Handle other possible JSON structures
-    let newsItems = []
-    if (Array.isArray(jsonData)) {
-      newsItems = jsonData
-    } else if (jsonData.articles && Array.isArray(jsonData.articles)) {
-      newsItems = jsonData.articles
-    } else if (jsonData.data && Array.isArray(jsonData.data)) {
-      newsItems = jsonData.data
     } else {
-      throw new Error("Unsupported JSON structure")
-    }
+      let newsItems = []
+      if (Array.isArray(jsonData)) {
+        newsItems = jsonData
+      } else if (jsonData.articles && Array.isArray(jsonData.articles)) {
+        newsItems = jsonData.articles
+      } else if (jsonData.data && Array.isArray(jsonData.data)) {
+        newsItems = jsonData.data
+      } else {
+        throw new Error("Unsupported JSON structure")
+      }
 
-    const articles: ParsedArticle[] = newsItems.map((item: any, index: number) => {
-      const title = item.title || item.headline || item.name || `News ${index + 1}`
-      const summary = item.summary || item.description || item.content || item.excerpt || ""
-      const link = item.link || item.url || item.href || "#"
-      const category = item.category || item.tag || item.type
+      const articles: ParsedArticle[] = newsItems.map((item: any, index: number) => {
+        const title = item.title || item.headline || item.name || `News ${index + 1}`
+        const summary = item.summary || item.description || item.content || item.excerpt || ""
+        const link = item.link || item.url || item.href || "#"
+        const category = item.category || item.tag || item.type
 
-      let pubDate = new Date()
-      const dateField = item.pubDate || item.publishedAt || item.date || item.timestamp || item.time
-      if (dateField) {
-        pubDate = new Date(dateField)
-        if (isNaN(pubDate.getTime())) {
-          pubDate = new Date()
+        let pubDate = new Date()
+        const dateField = item.pubDate || item.publishedAt || item.date || item.timestamp || item.time
+        if (dateField) {
+          pubDate = new Date(dateField)
+          if (isNaN(pubDate.getTime())) {
+            pubDate = new Date()
+          }
         }
-      }
 
-      return {
-        id: item.id || `json-${Date.now()}-${index}`,
-        title: String(title).trim(),
-        summary: String(summary).trim(),
-        link: String(link).trim(),
-        pubDate,
-        category: category ? String(category).trim() : undefined,
-        source: feedName,
-      }
-    })
+        return {
+          id: item.id || `json-${Date.now()}-${index}`,
+          title: String(title).trim(),
+          summary: String(summary).trim(),
+          link: String(link).trim(),
+          pubDate,
+          category: category ? String(category).trim() : undefined,
+          source: feedName,
+        }
+      })
 
-    return {
-      articles,
-      feedTitle: jsonData.title || jsonData.name || feedName,
-      feedDescription: jsonData.description || `Latest news from ${feedName}`,
+      result = {
+        articles,
+        feedTitle: jsonData.title || jsonData.name || feedName,
+        feedDescription: jsonData.description || `Latest news from ${feedName}`,
+      }
     }
+
+    if (useCache) {
+      cacheManager.set(cacheKey, result, 240) // 4 hours TTL
+      console.log(`[v0] Cached news data for ${feedName} (4 hours TTL)`)
+    }
+
+    return result
   } catch (error) {
     console.error("Error parsing JSON news:", error)
+
+    if (useCache) {
+      const expiredCache = cacheManager.get<RSSParseResult>(cacheKey)
+      if (expiredCache) {
+        console.log(`[v0] Using expired cache for ${feedName} due to API error`)
+        return expiredCache
+      }
+    }
 
     const errorMessage = error instanceof Error ? error.message : "Unknown error"
     const isApiNotFound = errorMessage.includes("404") || errorMessage.includes("not configured")
@@ -149,7 +218,7 @@ export async function parseRSSFeed(url: string, feedName: string): Promise<RSSPa
         title: isApiNotFound ? "新闻API需要配置" : "新闻源暂时无法访问",
         summary: isApiNotFound
           ? "域名 www.888388.xyz 需要配置以下API端点：/latest.json (中文新闻) 和 /news-en.json (英文新闻)"
-          : "可能的原因：网络连接问题、API限制或服务器维护",
+          : "可能的原因：网络连接问题、API限制或服务器维护。正在使用缓存数据。",
         link: "#",
         pubDate: new Date(),
         category: "系统消息",
@@ -166,10 +235,8 @@ export async function parseRSSFeed(url: string, feedName: string): Promise<RSSPa
       },
       {
         id: `fallback-${Date.now()}-3`,
-        title: "API配置说明",
-        summary: isApiNotFound
-          ? '请在服务器上创建JSON端点，返回格式：{"date":"2025/01/01","content":["新闻1","新闻2"]}'
-          : "您可以在设置中添加其他可用的新闻源",
+        title: "智能缓存系统",
+        summary: "应用使用4小时缓存来减少API调用，确保在有限的API配额下提供最佳体验",
         link: "#",
         pubDate: new Date(),
         category: "技术说明",
@@ -191,33 +258,6 @@ export async function parseRSSFeed(url: string, feedName: string): Promise<RSSPa
         link: "#",
         pubDate: new Date(),
         category: "使用指南",
-        source: feedName,
-      },
-      {
-        id: `fallback-${Date.now()}-6`,
-        title: "颈椎健康提醒",
-        summary: "定期的页面倾斜有助于缓解颈椎疲劳，建议配合适当的颈部运动",
-        link: "#",
-        pubDate: new Date(),
-        category: "健康建议",
-        source: feedName,
-      },
-      {
-        id: `fallback-${Date.now()}-7`,
-        title: "Google账户同步",
-        summary: "登录后可以同步个人设置，在不同设备间保持一致的使用体验",
-        link: "#",
-        pubDate: new Date(),
-        category: "账户功能",
-        source: feedName,
-      },
-      {
-        id: `fallback-${Date.now()}-8`,
-        title: "开源项目",
-        summary: "这是一个创新的开源项目，结合了新闻阅读和健康理念",
-        link: "#",
-        pubDate: new Date(),
-        category: "项目信息",
         source: feedName,
       },
     ]
