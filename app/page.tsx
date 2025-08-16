@@ -10,8 +10,8 @@ import { authService, type UserSettings } from "@/lib/auth"
 const texts = {
   zh: {
     settings: "设置",
-    shakingSettings: "摇动设置",
-    frequency: "摇动频率 (秒)",
+    shakingSettings: "摆动设置",
+    frequency: "摆动频率 (秒)",
     frequencyHint: "建议范围：5-300秒",
     maxTiltAngle: "最大倾斜角度 (度)",
     maxTiltAngleHint: "建议范围：5-45度",
@@ -30,7 +30,7 @@ const texts = {
     loading: "正在加载新闻...",
     loadError: "无法加载新闻内容，请检查网络连接",
     tiltAngle: "倾斜角度",
-    nextTilt: "下次倾斜",
+    nextTilt: "下次摆动",
     seconds: "秒",
     language: "语言",
     languageHint: "选择界面语言",
@@ -64,7 +64,7 @@ const texts = {
     loading: "Loading news...",
     loadError: "Unable to load news content, please check network connection",
     tiltAngle: "Tilt Angle",
-    nextTilt: "Next Tilt",
+    nextTilt: "Next Shaking",
     seconds: "s",
     language: "Language",
     languageHint: "Select interface language",
@@ -180,7 +180,6 @@ function SettingsModal({
 
         {/* Language Settings Section */}
         <div className="mb-5">
-          <h3 className="text-base font-semibold mb-2 text-green-700">{t.languageSettings}</h3>
           <div className="mb-3">
             <label className="block text-xs font-medium mb-1 text-green-600">{t.language}</label>
             <select
@@ -197,8 +196,6 @@ function SettingsModal({
 
         {/* Shaking Settings Section */}
         <div className="mb-5">
-          <h3 className="text-base font-semibold mb-2 text-green-700">{t.shakingSettings}</h3>
-
           <div className="flex gap-3 mb-3">
             <div className="flex-1">
               <label className="block text-xs font-medium mb-1 text-green-600">{t.frequency}</label>
@@ -230,7 +227,6 @@ function SettingsModal({
 
         {/* Font Size Settings Section */}
         <div className="mb-5">
-          <h3 className="text-base font-semibold mb-2 text-green-700">{t.fontSettings}</h3>
           <div className="mb-3">
             <label className="block text-xs font-medium mb-1 text-green-600">{t.fontSize}</label>
             <select
