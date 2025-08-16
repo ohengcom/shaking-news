@@ -18,7 +18,7 @@ const openSans = Open_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Shaking Head News - Stay Informed, Stay Healthy",
+  title: "Shaking News - Stay Informed, Stay healthy",
   description: "Turn news reading into neck exercise with our innovative rotating news app",
   generator: "v0.app",
 }
