@@ -154,9 +154,9 @@ function SettingsModal({
 
   return (
     <div className="fixed right-0 top-0 h-full w-1/4 min-w-80 bg-white bg-opacity-95 backdrop-blur-sm shadow-2xl overflow-y-auto z-50">
-      <div className="p-6">
+      <div className="p-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-green-800">{t.settings}</h2>
           <button onClick={onClose} className="p-1 hover:bg-green-100 rounded-full transition-colors">
             <X size={20} className="text-green-600" />
@@ -164,34 +164,19 @@ function SettingsModal({
         </div>
 
         {/* Authentication Section */}
-        <div className="mb-8">
-          <h3 className="text-base font-semibold mb-3 text-green-700">{language === "zh" ? "账户" : "Account"}</h3>
+        <div className="mb-5">
+          <h3 className="text-base font-semibold mb-2 text-green-700">{language === "zh" ? "账户" : "Account"}</h3>
           <AuthButton language={language} />
-          <p className="text-xs text-green-500 mt-2">
+          <p className="text-xs text-green-500 mt-1">
             {language === "zh" ? "登录后可同步设置到云端" : "Sign in to sync settings to cloud"}
           </p>
         </div>
 
-        <div className="mb-8">
-          <h3 className="text-base font-semibold mb-3 text-green-700">{t.language}</h3>
-          <div className="mb-4">
-            <select
-              value={language}
-              onChange={(e) => onLanguageChange(e.target.value as "zh" | "en")}
-              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
-            >
-              <option value="zh">中文</option>
-              <option value="en">English</option>
-            </select>
-            <p className="text-xs text-green-500 mt-1">{t.languageHint}</p>
-          </div>
-        </div>
-
         {/* Frequency Settings */}
-        <div className="mb-8">
-          <h3 className="text-base font-semibold mb-3 text-green-700">{t.shakingSettings}</h3>
-          <div className="mb-4">
-            <label className="block text-xs font-medium mb-2 text-green-600">{t.frequency}</label>
+        <div className="mb-5">
+          <h3 className="text-base font-semibold mb-2 text-green-700">{t.shakingSettings}</h3>
+          <div className="mb-3">
+            <label className="block text-xs font-medium mb-1 text-green-600">{t.frequency}</label>
             <input
               type="number"
               min="5"
@@ -203,8 +188,8 @@ function SettingsModal({
             <p className="text-xs text-green-500 mt-1">{t.frequencyHint}</p>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-xs font-medium mb-2 text-green-600">{t.maxTiltAngle}</label>
+          <div className="mb-3">
+            <label className="block text-xs font-medium mb-1 text-green-600">{t.maxTiltAngle}</label>
             <input
               type="number"
               min="5"
@@ -216,7 +201,7 @@ function SettingsModal({
             <p className="text-xs text-green-500 mt-1">{t.maxTiltAngleHint}</p>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-3">
             <label className="flex items-center gap-2 text-xs font-medium text-green-600">
               <input
                 type="checkbox"
@@ -229,8 +214,8 @@ function SettingsModal({
             <p className="text-xs text-green-500 mt-1">{t.showStatusHint}</p>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-xs font-medium mb-2 text-green-600">{t.fontSize}</label>
+          <div className="mb-3">
+            <label className="block text-xs font-medium mb-1 text-green-600">{t.fontSize}</label>
             <select
               value={fontSize}
               onChange={(e) => onFontSizeChange(e.target.value)}
@@ -245,9 +230,9 @@ function SettingsModal({
         </div>
 
         {/* Ad Settings */}
-        <div className="mb-8">
-          <h3 className="text-base font-semibold mb-3 text-green-700">{t.adSettings}</h3>
-          <div className="mb-4">
+        <div className="mb-5">
+          <h3 className="text-base font-semibold mb-2 text-green-700">{t.adSettings}</h3>
+          <div className="mb-3">
             <label className="flex items-center gap-2 text-xs font-medium text-green-600">
               <input
                 type="checkbox"
@@ -262,13 +247,13 @@ function SettingsModal({
         </div>
 
         {/* Data Source Settings */}
-        <div className="mb-8">
-          <h3 className="text-base font-semibold mb-3 text-green-700">{t.dataSourceSettings}</h3>
+        <div className="mb-5">
+          <h3 className="text-base font-semibold mb-2 text-green-700">{t.dataSourceSettings}</h3>
 
           {/* Current Data Sources */}
-          <div className="space-y-3 mb-4">
+          <div className="space-y-2 mb-3">
             {dataSources.map((source) => (
-              <div key={source.id} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+              <div key={source.id} className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
                 <input
                   type="checkbox"
                   checked={source.active}
@@ -292,7 +277,7 @@ function SettingsModal({
           </div>
 
           {/* Add New Data Source */}
-          <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
+          <div className="space-y-2 p-2 bg-gray-50 rounded-lg">
             <h4 className="text-xs font-medium text-green-700">{t.addNewSource}</h4>
             <input
               type="text"
