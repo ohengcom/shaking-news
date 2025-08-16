@@ -38,6 +38,9 @@ const texts = {
     adSettings: "广告设置",
     showAds: "显示广告",
     showAdsHint: "在页面两侧显示广告区域",
+    languageSettings: "语言设置",
+    fontSettings: "字体设置",
+    displayOptions: "显示选项",
   },
   en: {
     settings: "Settings",
@@ -69,6 +72,9 @@ const texts = {
     adSettings: "Ad Settings",
     showAds: "Show Ads",
     showAdsHint: "Display ad areas on both sides of the page",
+    languageSettings: "Language Settings",
+    fontSettings: "Font Settings",
+    displayOptions: "Display Options",
   },
 }
 
@@ -172,7 +178,24 @@ function SettingsModal({
           </p>
         </div>
 
-        {/* Frequency Settings */}
+        {/* Language Settings Section */}
+        <div className="mb-5">
+          <h3 className="text-base font-semibold mb-2 text-green-700">{t.languageSettings}</h3>
+          <div className="mb-3">
+            <label className="block text-xs font-medium mb-1 text-green-600">{t.language}</label>
+            <select
+              value={language}
+              onChange={(e) => onLanguageChange(e.target.value as "zh" | "en")}
+              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
+            >
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+            </select>
+            <p className="text-xs text-green-500 mt-1">{t.languageHint}</p>
+          </div>
+        </div>
+
+        {/* Shaking Settings Section */}
         <div className="mb-5">
           <h3 className="text-base font-semibold mb-2 text-green-700">{t.shakingSettings}</h3>
 
@@ -203,7 +226,29 @@ function SettingsModal({
               <p className="text-xs text-green-500 mt-1">{t.maxTiltAngleHint}</p>
             </div>
           </div>
+        </div>
 
+        {/* Font Size Settings Section */}
+        <div className="mb-5">
+          <h3 className="text-base font-semibold mb-2 text-green-700">{t.fontSettings}</h3>
+          <div className="mb-3">
+            <label className="block text-xs font-medium mb-1 text-green-600">{t.fontSize}</label>
+            <select
+              value={fontSize}
+              onChange={(e) => onFontSizeChange(e.target.value)}
+              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
+            >
+              <option value="text-xs">{t.small}</option>
+              <option value="text-sm">{t.medium}</option>
+              <option value="text-base">{t.large}</option>
+            </select>
+            <p className="text-xs text-green-500 mt-1">{t.fontSizeHint}</p>
+          </div>
+        </div>
+
+        {/* Display Options Section */}
+        <div className="mb-5">
+          <h3 className="text-base font-semibold mb-2 text-green-700">{t.displayOptions}</h3>
           <div className="flex gap-6 mb-3">
             <div className="flex-1">
               <label className="flex items-center gap-2 text-xs font-medium text-green-600">
@@ -230,33 +275,6 @@ function SettingsModal({
               </label>
               <p className="text-xs text-green-500 mt-1">{t.showAdsHint}</p>
             </div>
-          </div>
-
-          <div className="mb-3">
-            <label className="block text-xs font-medium mb-1 text-green-600">{t.fontSize}</label>
-            <select
-              value={fontSize}
-              onChange={(e) => onFontSizeChange(e.target.value)}
-              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
-            >
-              <option value="text-xs">{t.small}</option>
-              <option value="text-sm">{t.medium}</option>
-              <option value="text-base">{t.large}</option>
-            </select>
-            <p className="text-xs text-green-500 mt-1">{t.fontSizeHint}</p>
-          </div>
-
-          <div className="mb-3">
-            <label className="block text-xs font-medium mb-1 text-green-600">{t.language}</label>
-            <select
-              value={language}
-              onChange={(e) => onLanguageChange(e.target.value as "zh" | "en")}
-              className="w-full px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-xs"
-            >
-              <option value="zh">中文</option>
-              <option value="en">English</option>
-            </select>
-            <p className="text-xs text-green-500 mt-1">{t.languageHint}</p>
           </div>
         </div>
 
