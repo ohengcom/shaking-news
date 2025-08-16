@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { parseRSSFeed } from "@/lib/rss-parser"
 import { newsPreloader, getCachedNews } from "@/lib/news-preloader"
-import { Settings, X, Plus, Trash2, LogIn, LogOut } from "lucide-react"
+import { Settings, X, Plus, Trash2, LogIn, LogOut, Github } from "lucide-react"
 import { AuthButton } from "@/components/auth-button"
 import { authService, type UserSettings } from "@/lib/auth"
 
@@ -532,8 +532,18 @@ export default function ShakingHeadNews() {
         )}
       </div>
 
-      {/* Login/Logout and Settings Icons */}
+      {/* Login/Logout, GitHub and Settings Icons */}
       <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
+        <a
+          href="https://github.com/ohengcom/shaking-news"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-full shadow-lg transition-colors"
+          aria-label={language === "zh" ? "GitHub 仓库" : "GitHub Repository"}
+        >
+          <Github size={20} />
+        </a>
+
         {!user ? (
           <button
             onClick={() => authService.signIn()}
