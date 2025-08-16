@@ -519,7 +519,7 @@ export default function ShakingHeadNews() {
           </div>
         ) : (
           <div
-            className="space-y-3 bg-green-50 p-8 rounded-lg transition-transform duration-1000 ease-in-out"
+            className="space-y-2 bg-green-50 p-8 rounded-lg transition-transform duration-1000 ease-in-out"
             style={{ transform: `rotate(${tiltAngle}deg)` }}
           >
             {articles.slice(0, 15).map((article, index) => (
