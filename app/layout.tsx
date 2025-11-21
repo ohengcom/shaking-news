@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Montserrat, Open_Sans } from "next/font/google"
 import "./globals.css"
+import { APP_CONFIG } from "@/lib/constants"
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -41,14 +42,14 @@ export default function RootLayout({
         />
         <meta name="google-signin-client_id" content={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""} />
 
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-1TWP6S7S8H"></script>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${APP_CONFIG.GA_ID}`}></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-1TWP6S7S8H');
+              gtag('config', '${APP_CONFIG.GA_ID}');
             `,
           }}
         />
