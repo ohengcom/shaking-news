@@ -76,37 +76,68 @@ export async function parseRSSFeed(url: string, feedName: string, useCache = tru
     }
   }
 
-  console.log(`[v0] Fetching JSON news: ${feedName} from ${url}`)
+  console.log(`[v0] Fetching news: ${feedName} from ${url}`)
+
+  let jsonData: any
 
   try {
+    // Attempt 1: Direct Fetch (for JSON APIs)
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 15000)
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "User-Agent": "ShakingHeadNews/1.0",
-      },
-      mode: "cors",
-      signal: controller.signal,
-    })
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+        },
+        mode: "cors",
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
 
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      handleHttpError(response)
+      if (response.ok) {
+        const text = await response.text()
+        try {
+          jsonData = JSON.parse(text)
+        } catch (e) {
+          // If parsing fails, it might be XML/RSS, throw to trigger fallback
+          throw new Error("Response is not valid JSON")
+        }
+      } else {
+        throw new Error(`HTTP error ${response.status}`)
+      }
+    } catch (directError) {
+      clearTimeout(timeoutId)
+      console.log(`[v0] Direct fetch failed for ${url}, trying RSS2JSON proxy...`)
+      throw directError // Re-throw to catch block below
     }
+  } catch (error) {
+    // Attempt 2: RSS2JSON Proxy (for RSS/XML feeds or CORS issues)
+    try {
+      const rss2JsonUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`
+      const response = await fetch(rss2JsonUrl)
 
-    const jsonData = await response.json()
-    console.log(`[v0] Successfully fetched data from ${feedName}:`, jsonData)
+      if (!response.ok) {
+        throw new Error(`RSS2JSON proxy failed: ${response.status}`)
+      }
+
+      jsonData = await response.json()
+    } catch (proxyError) {
+      console.error("Error parsing news:", proxyError)
+      return handleParseError(proxyError, feedName, cacheKey, useCache)
+    }
+  }
+
+  try {
+    console.log(`[v0] Successfully fetched data from ${feedName}`)
 
     let result: RSSParseResult
 
-    if (jsonData.status === "ok" && Array.isArray(jsonData.articles)) {
-      result = parseNewsApiResponse(jsonData, feedName)
-    } else if (jsonData.status === "ok" && Array.isArray(jsonData.items)) {
+    if (jsonData.status === "ok" && Array.isArray(jsonData.items)) {
       result = parseRss2JsonResponse(jsonData, feedName)
+    } else if (jsonData.status === "ok" && Array.isArray(jsonData.articles)) {
+      result = parseNewsApiResponse(jsonData, feedName)
     } else if (Array.isArray(jsonData.news)) {
       result = parseCurrentsApiResponse(jsonData, feedName)
     } else if (jsonData.date && Array.isArray(jsonData.content)) {
@@ -122,7 +153,7 @@ export async function parseRSSFeed(url: string, feedName: string, useCache = tru
 
     return result
   } catch (error) {
-    console.error("Error parsing JSON news:", error)
+    console.error("Error processing news data:", error)
     return handleParseError(error, feedName, cacheKey, useCache)
   }
 }
