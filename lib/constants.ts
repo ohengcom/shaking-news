@@ -2,7 +2,7 @@ export const APP_CONFIG = {
   GA_ID: "G-1TWP6S7S8H",
   DEFAULT_FREQUENCY: 30,
   DEFAULT_MAX_TILT: 20,
-  DEFAULT_FONT_SIZE: "text-sm",
+  DEFAULT_FONT_SIZE: "text-base",
   DEFAULT_LANGUAGE: "zh" as const,
   ANIMATION_DURATION: 1000,
 }

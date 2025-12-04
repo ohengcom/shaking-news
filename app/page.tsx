@@ -161,7 +161,8 @@ export default function ShakingHeadNews() {
         </>
       )}
 
-      <div className="max-w-5xl mx-auto px-16 py-16 mt-4">
+      <div className="min-h-screen flex items-center justify-center px-16 py-16">
+        <div className="max-w-5xl w-full">
         {isLoading ? (
           <div className="text-center py-8">
             <p className="text-green-700">{t.loading}</p>
@@ -179,6 +180,7 @@ export default function ShakingHeadNews() {
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {/* Login/Logout, GitHub and Settings Icons */}
