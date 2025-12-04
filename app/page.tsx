@@ -123,19 +123,27 @@ export default function ShakingHeadNews() {
 
       {showAds && (
         <>
-          <div className="fixed left-4 top-1/2 transform -translate-y-1/2 w-32 h-96 bg-white bg-opacity-90 border border-green-200 rounded-lg shadow-lg z-20 flex items-center justify-center">
-            <div className="text-center text-green-600 text-xs">
-              <div className="mb-2">AdSense</div>
-              <div className="text-gray-400">广告位</div>
-              <div className="text-gray-400 text-xs mt-1">160x600</div>
-            </div>
+          <div className="fixed left-4 top-1/2 transform -translate-y-1/2 w-[160px] h-[600px] z-20">
+            <ins
+              className="adsbygoogle"
+              style={{ display: "block", width: "160px", height: "600px" }}
+              data-ad-client="ca-pub-5567992467139695"
+              data-ad-slot="auto"
+              data-ad-format="vertical"
+              data-full-width-responsive="false"
+            />
+            <script dangerouslySetInnerHTML={{ __html: "(adsbygoogle = window.adsbygoogle || []).push({});" }} />
           </div>
-          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 w-32 h-96 bg-white bg-opacity-90 border border-green-200 rounded-lg shadow-lg z-20 flex items-center justify-center">
-            <div className="text-center text-green-600 text-xs">
-              <div className="mb-2">AdSense</div>
-              <div className="text-gray-400">广告位</div>
-              <div className="text-gray-400 text-xs mt-1">160x600</div>
-            </div>
+          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 w-[160px] h-[600px] z-20">
+            <ins
+              className="adsbygoogle"
+              style={{ display: "block", width: "160px", height: "600px" }}
+              data-ad-client="ca-pub-5567992467139695"
+              data-ad-slot="auto"
+              data-ad-format="vertical"
+              data-full-width-responsive="false"
+            />
+            <script dangerouslySetInnerHTML={{ __html: "(adsbygoogle = window.adsbygoogle || []).push({});" }} />
           </div>
         </>
       )}
