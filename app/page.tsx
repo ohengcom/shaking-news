@@ -18,7 +18,7 @@ export default function ShakingHeadNews() {
   const [showStatus, setShowStatus] = useState(false)
   const [fontSize, setFontSize] = useState(APP_CONFIG.DEFAULT_FONT_SIZE)
   const [language, setLanguage] = useState<"zh" | "en">(APP_CONFIG.DEFAULT_LANGUAGE)
-  const [showAds, setShowAds] = useState(false)
+  const [showAds, setShowAds] = useState(true)
   const [user, setUser] = useState(null)
   const [activeSources, setActiveSources] = useState(DEFAULT_SOURCES.zh)
 
