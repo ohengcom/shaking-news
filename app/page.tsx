@@ -128,7 +128,7 @@ export default function ShakingHeadNews() {
   }, [activeSources])
 
   return (
-    <div className="min-h-screen bg-green-50 p-8 relative overflow-hidden">
+    <div className="h-screen bg-green-50 relative overflow-hidden">
       {showStatus && (
         <div className="fixed top-4 left-4 text-sm text-green-600 z-30">
           {t.tiltAngle}: {tiltAngle.toFixed(1)}° | {t.nextTilt}: {timeUntilNext}
