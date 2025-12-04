@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { parseRSSFeed } from "@/lib/rss-parser"
 import { newsPreloader, getCachedNews } from "@/lib/news-preloader"
 import { Settings, LogIn, LogOut, Github } from "lucide-react"
-import { authService, type UserSettings } from "@/lib/auth"
+import { authService, type UserSettings, type User } from "@/lib/auth"
 import { SettingsModal } from "@/components/settings-modal"
 import { useShaking } from "@/hooks/use-shaking"
 import { TEXTS, DEFAULT_SOURCES, APP_CONFIG } from "@/lib/constants"
@@ -19,7 +19,8 @@ export default function ShakingHeadNews() {
   const [fontSize, setFontSize] = useState(APP_CONFIG.DEFAULT_FONT_SIZE)
   const [language, setLanguage] = useState<"zh" | "en">(APP_CONFIG.DEFAULT_LANGUAGE)
   const [showAds, setShowAds] = useState(true)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<User | null>(null)
+  const adsInitialized = useRef(false)
   const [activeSources, setActiveSources] = useState(DEFAULT_SOURCES.zh)
 
   // Use custom hook for shaking logic
@@ -28,6 +29,20 @@ export default function ShakingHeadNews() {
   useEffect(() => {
     authService.initializeGoogleAuth()
   }, [])
+
+  // Initialize AdSense ads only once
+  useEffect(() => {
+    if (showAds && !adsInitialized.current && typeof window !== 'undefined') {
+      try {
+        const adsbygoogle = (window as any).adsbygoogle || []
+        adsbygoogle.push({})
+        adsbygoogle.push({})
+        adsInitialized.current = true
+      } catch (e) {
+        console.error('AdSense initialization error:', e)
+      }
+    }
+  }, [showAds])
 
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged((user) => {
@@ -132,7 +147,6 @@ export default function ShakingHeadNews() {
               data-ad-format="vertical"
               data-full-width-responsive="false"
             />
-            <script dangerouslySetInnerHTML={{ __html: "(adsbygoogle = window.adsbygoogle || []).push({});" }} />
           </div>
           <div className="fixed right-4 top-1/2 transform -translate-y-1/2 w-[160px] h-[600px] z-20">
             <ins
@@ -143,7 +157,6 @@ export default function ShakingHeadNews() {
               data-ad-format="vertical"
               data-full-width-responsive="false"
             />
-            <script dangerouslySetInnerHTML={{ __html: "(adsbygoogle = window.adsbygoogle || []).push({});" }} />
           </div>
         </>
       )}
