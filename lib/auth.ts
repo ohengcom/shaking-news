@@ -47,7 +47,7 @@ class AuthService {
     if (typeof window !== "undefined" && window.google) {
       // Configure for www.888388.xyz domain
       this.tokenClient = window.google.accounts.oauth2.initTokenClient({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "your-google-client-id",
+        client_id: "855446158115-uv0i432c3b9blcaupveqesvbleq3q7a5.apps.googleusercontent.com",
         scope: "openid email profile",
         callback: (response: any) => {
           if (response.access_token) {
