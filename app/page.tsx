@@ -161,7 +161,7 @@ export default function ShakingHeadNews() {
         </>
       )}
 
-      <div className="min-h-screen flex items-center justify-center px-16">
+      <div className="h-screen flex items-center justify-center px-16">
         <div className="max-w-5xl w-full">
         {isLoading ? (
           <div className="text-center py-8">
