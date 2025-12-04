@@ -128,7 +128,7 @@ export default function ShakingHeadNews() {
               className="adsbygoogle"
               style={{ display: "block", width: "160px", height: "600px" }}
               data-ad-client="ca-pub-5567992467139695"
-              data-ad-slot="auto"
+              data-ad-slot="5231190076"
               data-ad-format="vertical"
               data-full-width-responsive="false"
             />
@@ -139,7 +139,7 @@ export default function ShakingHeadNews() {
               className="adsbygoogle"
               style={{ display: "block", width: "160px", height: "600px" }}
               data-ad-client="ca-pub-5567992467139695"
-              data-ad-slot="auto"
+              data-ad-slot="5231190076"
               data-ad-format="vertical"
               data-full-width-responsive="false"
             />
